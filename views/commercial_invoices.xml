@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<openerp>
+    <data> 
+
+        <!-- Top menu -->
+        <menuitem name="LC Reports" id="custom_top_menu" />
+        <!-- Sub child menu -->
+        <menuitem name="LC Reports" id ="custom_sub_menu" parent="custom_top_menu"/>
+
+        <!--Import assets-->
+        <template id="assets_backend" name="custom assets" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+                <link rel="stylesheet" href="/lc_report_generator/static/src/css/style.css"/>
+                <link rel="stylesheet" href="/lc_report_generator/static/src/css/bootstrap.min.css"/>
+                <script type="text/javascript" src="/lc_report_generator/static/src/js//myscript.js"/>
+                <script type="text/javascript" src="/lc_report_generator/static/src/js//bootstrap.min.js"/>
+            </xpath>
+        </template>
+        <!-- inherit_id="web.assets_frontend" -->
+        <!--Import assets-->
+
+        <!-- commercial invoice generator start -->
+
+
+            <!-- <tree view start> -->
+            <record id="view_commercial_invoices_tree" model="ir.ui.view">
+                <field name="name">commercial_invoice.model.tree</field>
+                <field name="model">commercial_invoice.model</field>
+                <field name="priority" eval="8" />
+                <field name="arch" type="xml">
+                    <tree string="Commercial_Invoices" default_order="id desc">
+                        <field name="name" />
+                        <field name="account_invoice_id" />
+                        <field name="lc_num" />
+                        <field name="customer_name" />
+                        <field name="ordered_products_total_amount" />
+                        <field name="currency_symbol" />
+                    </tree>
+                </field>
+            </record>
+            <!-- <tree view end> -->
+
+            <!-- <form view start> -->
+            <record id="view_commercial_invoices_form" model="ir.ui.view">
+                <field name="name">LC_report_generator.commercial_invoice.form</field>
+                <field name="model">commercial_invoice.model</field>
+                <field name="arch" type="xml">
+                    <form string="Commercial_Invoices">
+                        <header>
+                            <!-- <button string="Packing List"/>
+                            <button string="Truck Challan/Receipt"/>
+                            <button string="Delivery Challan"/>
+                            <button string="Application1"/>
+                            <button string="Application2"/>
+                            <button string="Application3"/>
+                            <button string="Bill of exchange"/> -->
+                        </header>
+                        <sheet string="Commercial_Invoice">
+                            <h2 class="mt1 com_invoice_title">
+                                <span class="com_invoice_title_span">COMMERCIAL INVOICE</span>
+                            </h2>
+                            <group>
+                                <div class='row'>
+                                    <!-- <left side start> -->
+                                    <div class='col-lg-6 col-md-6 col-sm-12 col-xs-12'>
+                                        <h3>
+                                            <span class='com_invoice_title_span'>For Account of:</span>
+                                        </h3> 
+                                        <group>
+                                            <field name='account_invoice_id' on_change="onchange_account_invoice_id(account_invoice_id)"/>
+                                            <field name="customer_name"/>
+                                            <field name="customer_full_address"/>
+                                        </group>
+                                        <div class='boder'>
+                                            <div class='padding_left padding_right'>
+                                                <group>
+                                                    <field name="transport"/>
+                                                    <field name="dealer_factory_name"/>
+                                                    <field name="beneficiary_vat_no"/>
+                                                    <field name="hs_Code"/>
+                                                    <field name="erc_no"/>
+                                                </group>
+                                            </div>
+                                        </div>
+                                        <div class='boder margin_top'>
+                                            <div class='padding_left padding_right'>
+                                                <h3>To     : Factory</h3>
+                                                <group>
+                                                    <field name="client_shipping_factory_name" on_change="onchange_client_shipping_factory_name(client_shipping_factory_name)"/>
+                                                    <field name="client_shipping_factory_address"/>
+                                                </group>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- <left side end> -->
+                                    <!-- <right side start> -->
+                                    <div class='col-lg-6 col-md-6 col-sm-12 col-xs-12 '>
+                                        <div class='boder'>
+                                            <div class='padding_left padding_right'>
+                                                <group>
+                                                    <field name='name' />
+                                                    <field name="commercial_invoice_created_date"/>
+                                                </group>
+                                            </div>
+                                        </div>
+                                        <div class='boder margin_top'>
+                                            <div class='padding_left padding_right'>
+                                                <group>
+                                                    <field name="country_of_origin" on_change="onchange_country_origin(country_of_origin)"/>
+                                                    <field name="destination_address"/>
+                                                </group>
+                                            </div>
+                                        </div>
+                                        <div class='boder margin_top'>
+                                            <div class='padding_left padding_right'>
+                                                <h3 class='text-center'>
+                                                    <span class=''>Terms of Payment</span>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                        <div class='boder'>
+                                            <div class='padding_left padding_right'>
+                                                <group>
+                                                    <field name="lc_num" on_change="onchange_lc_num_service(lc_num)"/>
+                                                    <field name="lc_date"/>
+                                                    <field name="issuing_bank"/>
+                                                    <field name="vat_code"/>
+                                                    <field name="irc_num"/>
+                                                </group>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- <right side end> -->
+                                    <!-- <products start> -->
+                                    <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12'>
+                                        <div class=' margin_top' style='margin-top:10px;'>
+                                            <div class='padding_left padding_right'>
+                                                <notebook colspan="4">
+                                                    <page string="Invoice Lines">
+                                                        <table class='oe_list_content'>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th colspan="8">
+                                                                        <div class="oe_list_buttons"></div>
+                                                                        <div class="oe_list_sidebar"></div>
+                                                                        <div class="oe_list_pager"></div>
+                                                                    </th>
+                                                                </tr>
+                                                                <tr class="oe_list_header_columns">
+                                                                    <!-- <th data-id="specification" class="oe_list_header_many2one oe_sortable">
+                                                                        <div>
+                                                                             Specification
+                                                                        </div>
+                                                                    </th> -->
+                                                                    <th data-id="product_id" class="oe_list_header_many2one oe_sortable">
+                                                                        <div>
+                                                                            <span style='margin-top:7px;'>Specification</span>
+                                                                        </div>
+                                                                    </th>
+                                                                    <th data-id="product_id" class="oe_list_header_many2one oe_sortable">
+                                                                        <div>
+                                                                            Item
+                                                                        </div>
+                                                                    </th>
+                                                                    <th data-id="product_id" class="oe_list_header_many2one oe_sortable">
+                                                                        <div>
+                                                                            No. of Bags
+                                                                        </div>
+                                                                    </th>
+                                                                    <th data-id="quantity" class="oe_list_header_float oe_sortable">
+                                                                        <div>
+                                                                            Quantity in kgs.
+                                                                        </div>
+                                                                    </th>
+                                                                    <th data-id="price_unit" class="oe_list_header_float oe_sortable">
+                                                                        <div> 
+                                                                            Unit Price in <field name="currency_symbol" class="oe_inline" nolabel="1"/>
+                                                                        </div>
+                                                                    </th>
+                                                                    <th data-id="price_subtotal" class="oe_list_header_monetary oe_sortable">
+                                                                        <div>
+                                                                            Total Price in <field name="currency_symbol1" class="oe_inline" nolabel="1"/>
+                                                                        </div>
+                                                                    </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tfoot>
+                                                                <tr>
+                                                                    <td class="oe_list_footer oe_number">
+                                                                        </td><td class="oe_list_footer oe_number">
+                                                                        </td><td class="oe_list_footer oe_number">
+                                                                        </td><td class="oe_list_footer oe_number">
+                                                                        </td><td class="oe_list_footer oe_number">
+                                                                        </td><td class="oe_list_footer oe_number">
+                                                                    </td>
+                                                                </tr>
+                                                            </tfoot>
+                                                            <tbody >
+                                                                <tr data-id="10" class="" style='background:white !important;'>    
+                                                                    <td data-field="specification" class="">
+                                                                        Export Quality Yarn
+                                                                    </td>
+                                                                    <td data-field="product_id" class="  ">
+                                                                        <field name="ordered_products_name"/>
+                                                                    </td>
+                                                                    <td data-field="number_of_bags" class="oe_list_field_cell oe_list_field_float oe_number   oe_required">
+                                                                        <field name="ordered_products_number_of_bags"/>
+                                                                    </td>
+                                                                    <td data-field="quantity" class="oe_list_field_cell oe_list_field_float oe_number   oe_required">
+                                                                        <field name="ordered_products_quantity"/>
+                                                                    </td>
+                                                                    <td data-field="price_unit" class="oe_list_field_cell oe_list_field_float oe_number   oe_required">
+                                                                        <field name="ordered_products_price_of_unit"/>
+                                                                    </td>
+                                                                    <td data-field="price_subtotal" class="oe_list_field_cell oe_list_field_monetary oe_number  oe_readonly ">
+                                                                        <field name="ordered_products_amount"/>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+
+                                                        <div class='row' style='margin-top:10px; margin-bottom:10px;'>
+                                                            <div class='col-lg-6 col-md-6 col-sm-6 col-xs-12 pull-left'>
+                                                                <span class='daynamic_value'>Total:</span>
+                                                            </div>
+                                                            <div class='col-lg-6 col-md-6 col-sm-6 col-xs-12'>
+                                                                <div class='col-lg-7 col-md-7 col-sm-7 col-xs-12' style='padding-right:1px !important;'>
+                                                                    <span class='daynamic_value pull-right'><field name="ordered_products_total_quantity"/></span>
+                                                                </div>
+                                                                <div class='col-lg-5 col-md-5 col-sm-5 col-xs-12' style='padding-right:1px !important;'>
+                                                                    <span class='daynamic_value pull-right'><field name="ordered_products_total_amount"/></span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </page>
+                                                    <page string="Other Info">
+                                                        <h3 class="mt1 com_invoice_title">
+                                                            <span class="com_invoice_title_span">Other informations You can show in here :)</span>
+                                                        </h3>   
+                                                    </page>
+                                                </notebook>
+                                                
+                                            </div>
+                                        </div>    
+                                    </div>
+                                    <!-- <products end> -->
+                                    <!-- <written part start> -->
+                                    <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12'>
+                                        <div class='margin_top'>
+                                            <p>Above goods supplied as per Proforma Invoice No. <span class='daynamic_value'><field name="account_invoice_id2" class="oe_inline"/></span> dated <span class='daynamic_value'><field name="invoice_created_date" class="oe_inline"/></span></p>
+                                            <p>Remarks: This Letter of Credit is Issued against Export Contract No.() dated ()</p>
+                                            <p>We hereby certify that above mentioned goods are of <span class='daynamic_value'><field name="country_of_origin2" class="oe_inline"/></span> Origin.</p>
+                                        </div>
+                                    </div>    
+                                    <!-- <written part end> -->
+                                    <!-- <marks start> -->
+                                    <div class='col-lg-6 col-md-6 col-sm-12 col-xs-12'>
+                                        <h3 class='text-center'>MARK</h3>
+                                        <div class='boder margin_top'>
+                                            <div class='padding_left padding_right'>
+                                                <p class='text-center'><span class='daynamic_value'><field name="customer_name2" class="oe_inline"/></span></p>
+                                                <p class='text-center'>L/C No: <span class='daynamic_value'><field name="lc_num2" class="oe_inline"/></span></p>
+                                                <p class='text-center'>Dated: <span class='daynamic_value'><field name="lc_date2" class="oe_inline"/></span></p>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                    <div class='col-lg-6 col-md-6 col-sm-12 col-xs-12'>
+                                        <p class='text-center' style='margin-top:90px;'>Authorized Signature</p>
+                                    </div>
+                                    <!-- <marks end> -->
+                                </div>
+                            </group>
+                        </sheet>
+                    </form>
+                </field>
+            </record>
+            <!-- <form view end> -->
+
+            <!-- <search start> -->
+            <record id="view_commercial_invoices_search" model="ir.ui.view">
+                <field name="name">commercial_invoice.model.search</field>
+                <field name="model">commercial_invoice.model</field>
+                <field name="priority" eval="8" />
+                <field name="arch" type="xml">
+                    <search string="Commercial_Invoices">
+                        <field name="name" />
+                        <field name="account_invoice_id" />
+                        <field name="customer_name" />
+                    </search>
+                </field>
+            </record>
+            <!-- <search end> -->
+
+            <!-- <act_window start> -->
+            <record id="act_open_commercial_invoices_view" model="ir.actions.act_window">
+                <field name="name">Commercial Invoice Generator</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">commercial_invoice.model</field>
+                <field name="view_type">form</field>
+                <field name="view_mode">tree,form</field>
+                <field name="search_view_id" ref='view_commercial_invoices_search'/>
+                <field name='domain'>[]</field>
+                <field name="context">{}</field>
+                <field name="help" type="html">
+                    <p class="oe_view_nocontent_create">
+                        Click here to creat Commercial Invoice
+                    </p>
+                </field>
+            </record>
+            <record model="ir.actions.act_window.view" id="act_open_commercial_invoices_view_form">
+                <field name="act_window_id" ref="act_open_commercial_invoices_view" />
+                <field name="sequence" eval="20" />
+                <field name="view_mode">form</field>
+                <field name="view_id" ref="view_commercial_invoices_form" />
+            </record>
+            <record model="ir.actions.act_window.view" id="act_open_commercial_invoices_view_tree">
+                <field name="act_window_id" ref="act_open_commercial_invoices_view" />
+                <field name="sequence" eval="10" />
+                <field name="view_mode">tree</field>
+                <field name="view_id" ref="view_commercial_invoices_tree" />
+            </record>
+            <!-- <act_window end> -->
+        <!-- commercial invoice generator end -->
+
+
+        <!-- Creat child menu / Action menu -->
+        <menuitem action="act_open_commercial_invoices_view" name="Commercial Invoice" id="custom_child_menu2" parent="custom_sub_menu"  sequence="2"/> 
+
+        <!-- pdf report generate start-->
+        <report
+            id="report_example_model_name" 
+            model="commercial_invoice.model"
+            string="Commercial Invoice"
+            name="lc_report_generator.report_commercial_invoice_report_view"
+            file="lc_report_generator.commercial_invoice.model"
+            report_type="qweb-pdf"/>
+
+        <template id="report_commercial_invoice_report_view">
+                
+            <t t-call="report.external_layout" t-lang="en_US">              
+                <t t-foreach="docs" t-as="o">
+                    <t>          
+                     <div class="page">
+                        
+                        <!-- < page content start> -->
+
+                            <div class="container">
+                                <h4 class="text-center"><span style='border-bottom:2px solid #000;font-weight:bold;'>COMMERCIAL INVOICE</span></h4>
+
+
+                                <div class="row">
+                                    <!-- first part start -->
+                                        <!-- left part start -->
+                                            <div class="col-xs-6" >
+                                                <p><span style='border-bottom:2px solid #000;font-weight:bold;'>For Account Of:</span></p>
+                                                <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12" style=' padding:0px !important;'>
+                                                    <p style='margin-left:5px;'><span t-field="o.customer_name"/></p>
+                                                    <p style='margin-left:5px;'><span t-field="o.customer_full_address"/> </p>
+                                                </div>
+                                                <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12"></div>
+
+                                                <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12' style='border:1px solid #000; padding:0px !important;margin-top:5px;'>
+                                                        <p><span style='font-weight:bold;margin-left:5px;'>Means Of Transport: </span><span t-field="o.transport"/></p>
+                                                        <p><span style='font-weight:bold;margin-left:5px;'>Form: </span><span t-field="o.dealer_factory_name"/></p><br/><br/>
+                                                        <p><span style='font-weight:bold;margin-left:5px;'>Beneficiary VAT No : </span><span t-field="o.beneficiary_vat_no"/></p>
+                                                        <p><span style='font-weight:bold;margin-left:5px;'>HS Code : </span><span t-field="o.hs_Code"/></p>
+                                                        <p><span style='font-weight:bold;margin-left:5px;'>ERC No : </span><span t-field="o.erc_no"/></p>
+                                                </div>
+                                                <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12' style='border:1px solid #000; padding:0px !important;margin-top:5px;'>
+                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style='padding:0px !important;'>
+                                                            <p><span style='font-weight:bold;margin-left:5px;'>To: Factory</span></p>    
+                                                        </div>
+                                                        <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12' style='padding-left:30px !important;'>
+                                                                <span t-field="o.client_shipping_factory_name"/><br/>
+                                                                <span t-field="o.client_shipping_factory_address"/> 
+                                                        </div>
+                                                </div>
+                                            </div>
+                                        <!-- left part start -->
+                                        <!-- right part start -->
+                                            <div class="col-xs-6" style=''>
+                                                <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12' style='border:1px solid #000; padding:0px !important;margin-top:5px;'>
+                                                        <p><span style='font-weight:bold;margin-left:10px;'>Invoice No &#8195;&#8195;&#8195;&#8195;:&#8195;</span> <span t-field="o.name"/></p>
+                                                        <p><span style='font-weight:bold;margin-left:10px;'>Date&#8195;&#8195;&#8195;&#8195;&#8195;&#8195;&#8195;&#8194;:&#8195;</span> <span t-field="o.commercial_invoice_created_date"/></p>
+                                                </div>
+                                                <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12' style='border:1px solid #000; padding:0px !important;margin-top:5px;'>
+                                                        <p><span style='font-weight:bold;margin-left:10px;'>Country Of Origin:&#8195;</span> <span t-field="o.country_of_origin"/></p>
+
+                                                        <div class='row'>
+                                                            <div class='col-xs-4'>
+                                                                <p><span style='font-weight:bold;margin-left:10px;'>Destination :</span></p>
+                                                            </div>
+                                                            <div class='col-xs-8' >
+                                                                <p style='padding-left:20px !important;padding-right:5px !important;'><span t-field="o.destination_address"/></p>
+                                                            </div>
+                                                        </div>
+                                                </div>
+                                                <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12' style='border:1px solid #000; padding:0px !important;margin-top:5px;'>
+                                                        <p class="text-center" style="margin-bottom:0px !important;"><span style='font-weight:bold;margin-left:10px;'>Terms of Payment</span></p>
+                                                </div>
+                                                <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12' style='border:1px solid #000; padding:0px !important;'>
+                                                        <p><span style='font-weight:bold;margin-left:10px;'>L/C No.&#8195;&#8195;&#8195;&#8195;&#8195;&#8195;:&#8195;</span> <span t-field="o.lc_num"/></p>
+
+                                                        <p><span style='font-weight:bold;margin-left:10px;'>Dated&#8195;
+                                                        &#8195;&#8195;&#8195;&#8195;&#8194;&#8194;&#8194;:&#8195;</span> <span t-field="o.lc_date"/></p>
+
+                                                        <div class='row'>
+                                                            <div class='col-xs-4'>
+                                                                <p><span style='font-weight:bold;margin-left:10px;'>Issuing Bank:</span></p>
+                                                            </div>
+                                                            <div class='col-xs-8'>
+                                                                <p style='padding-left:20px !important;padding-right:5px !important;'><span t-field="o.issuing_bank"/></p>
+                                                            </div>
+                                                        </div>
+
+                                                        <p><span style='font-weight:bold;margin-left:10px;'>VAT Reg./H.S Code:&#8195;</span><span t-field="o.vat_code"/></p>
+
+                                                        <div class='row'>
+                                                                <div class='col-xs-4'>
+                                                                    <p><span style='font-weight:bold;margin-left:10px;'>IRC/TIN/BIN :</span></p>
+                                                                </div>
+                                                                <div class='col-xs-8' >
+                                                                    <p style='padding-left:20px !important;padding-right:5px !important;'><span t-field="o.irc_num"/></p>
+                                                                </div>
+                                                        </div>
+                                                </div>
+
+                                            </div>
+                                        <!-- right part start -->
+                                    <!-- first part end -->
+
+                                    <!-- second part start -->
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style='margin-top:20px;margin-bottom:20px;'>
+                                            <table class="table table-bordered">
+                                                    <thead class="thead-default">
+                                                      <tr>
+                                                        <th class="text-center">Specification</th>
+                                                        <th class="text-center">Item</th>
+                                                        <th class="text-center">No. of Bags</th>
+                                                        <th class="text-center">Quantity in kgs.</th>
+                                                        <th class="text-center">Unit Price in</th>
+                                                        <th class="text-center">Total Price in</th>
+                                                      </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                      <tr>
+                                                        <td class="text-center">Export Quality Yarn</td>
+                                                        <td>
+                                                            <span t-field="o.ordered_products_name"/>
+                                                        </td>
+                                                        <td class="text-center">
+                                                                <span t-field="o.ordered_products_number_of_bags"/>
+                                                        </td>
+                                                        <td class="text-center">
+                                                                <span t-field="o.ordered_products_quantity"/>
+                                                        </td>
+                                                        <td class="text-center">
+                                                                <span t-field="o.ordered_products_price_of_unit"/>
+                                                        </td>
+                                                        <td class="text-center">
+                                                                <span t-field="o.ordered_products_amount"/>
+                                                        </td>
+                                                      </tr>
+
+                                                        <tr style='border: 1px solid #ededed !important;'>
+                                                            <td class="text-center" style='border-right:none !important;'>Total:</td>
+                                                            <td  style='border:none !important;'>
+                                                                
+                                                            </td>
+                                                            <td class="text-center"  style='border:none !important;'>
+                                                                    
+                                                            </td>
+                                                            <td class="text-center"  style='border:none !important;'>
+                                                                    <span class='daynamic_value'><span t-field="o.ordered_products_total_quantity"/></span>
+                                                            </td>
+                                                            <td class="text-center"  style='border:none !important;'>
+                                                                    
+                                                            </td>
+                                                            <td class="text-center"  style='border:none !important;'>
+                                                                    <span class='daynamic_value'><span t-field="o.ordered_products_total_amount"/></span>
+                                                            </td>
+                                                        </tr>
+
+                                                    </tbody>
+                                            </table>
+                                    </div>        
+                                    <!-- second part end -->
+
+                                    <!-- third part start -->
+                                    <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12'>
+                                        <p>Above goods supplied as per Proforma Invoice No.<span style='font-weight:bold;'> <span t-field="o.account_invoice_id2"/></span> dated <span style='font-weight:bold;'><span t-field="o.invoice_created_date"/></span></p>
+                                        
+                                        <p>Remarks: This Letter of Credit is Issued against Export Contract No. <span style='font-weight:bold;'>(...)</span> dated <span style='font-weight:bold;'>(...)</span></p>
+
+                                        <p>We hereby certify that above mentioned goods are of <span style='font-weight:bold;'><span t-field="o.country_of_origin2"/></span> Origin.</p>
+                                    </div>
+                                    <!-- third part end -->
+
+                                    <!-- forth part start -->
+                                    <div class="col-xs-6" style='margin-top:20px;margin-bottom:20px;'>
+                                            <p class="text-center"><span style='font-weight:bold;'>Mark</span></p>
+                                            <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12' style='border:1px solid #000; padding:0px !important;margin-top:5px;'>
+                                                    <p class="text-center" style="margin-bottom:0px !important;"><span style='font-weight:bold;margin-left:10px;'><span t-field="o.customer_name2"/></span></p>
+
+                                                    <p class="text-center" style="margin-bottom:0px !important;"><span style='font-weight:bold;margin-left:10px;'>L/C No : <span t-field="o.lc_num2"/></span></p>
+
+                                                    <p class="text-center" style="margin-bottom:0px !important;"><span style='font-weight:bold;margin-left:10px;'>Dated : <span t-field="o.lc_date2"/></span></p>
+                                            </div>
+                                    </div>
+                                    <div class="col-xs-6" style='margin-top:20px;margin-bottom:20px;'>
+                                        <p style='visibility:hidden;'>sdfds</p>
+                                        <p style='visibility:hidden;'>sdfsd</p>
+                                        <p class="text-center "><span style='font-weight:bold;'>Authorized Signature</span></p>
+                                    </div>
+                                    <!-- forth part end -->
+                                </div>
+
+
+
+
+
+                            </div>
+
+                        <!-- < page content end> -->
+
+                     </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+        <!-- pdf report generate start-->
+
+    </data>
+</openerp>         
+
